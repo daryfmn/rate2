@@ -1,22 +1,13 @@
-name: testing workflows
+name: Run Playwright Tests
 
-on:
+on: 
   push:
-    branches: [ main ]  
+    branches: [master, main]
 
-jobs:
-  greeting:
-    runs-on: self-hosted
+  jobs:
+    demo:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Say Hello
-        run: echo "Hello, World! 👋"
-
-      - name: Show Date and Time
-        run: echo "Current time is $(date) 🕒"
-
-      - name: Show GitHub Info
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
-          echo "Commit: ${{ github.sha }}"
+      steps: 
+        - name: Greetings
+          run: echo "Hello, world!"
