@@ -5,11 +5,11 @@
 name: CI/CD Auto Pull and Rebuild
 
 # Kapan workflow ini akan dijalankan:
-# 1. Ketika ada push ke branch master (otomatis)
+# 1. Ketika ada push ke semua branch (otomatis)
 # 2. Manual trigger melalui GitHub Actions tab
 on:
   push:
-    branches: [ main ]  # Hanya berjalan ketika push ke master
+    branches-ignore: []  # Berjalan di semua branch
   workflow_dispatch:      # Bisa dijalankan manual juga
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
         echo "PROJECT_PATH=$PROJECT_PATH" >> $GITHUB_ENV
         echo "✅ Found project at: $PROJECT_PATH"
         
-    # Step 1: Ambil kode terbaru dari branch master
+    # Step 1: Ambil kode terbaru dari branch master/main
     - name: Pull latest changes
       working-directory: ${{ env.PROJECT_PATH }}
       run: |
@@ -77,3 +77,20 @@ jobs:
         else
           echo "❌ Deployment gagal di laptop-andi! Cek log error di atas"
         fi
+
+    # Step 8: Jika workflow sukses dan bukan main/master, buat pull request
+    - name: Create Pull Request on Success
+      if: success() && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: 'Auto: Merge verified branch into main'
+        title: 'Auto PR: ${{ github.ref_name }} - Workflow Success'
+        body: |
+          This pull request was automatically created because the CI/CD workflow passed successfully.
+          
+          **Branch:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          **Triggered by:** ${{ github.actor }}
+        base: main
+        head: ${{ github.ref_name }}
+        delete-branch: false
